@@ -25,6 +25,7 @@ public class Enemy : UpdateableGameObject, IDamagable
 
             if (IsDead())
             {
+                GameManager.instance.IncreaseKillCount();
                 if (targeter != null)
                 {
                     targeter.OnTargetKilled();
@@ -34,10 +35,7 @@ public class Enemy : UpdateableGameObject, IDamagable
                 gameObject.SetActive(false);
 
                 OnEnemyDeath?.Invoke(this);
-
             }
-
-
         }
     }
 
@@ -45,7 +43,6 @@ public class Enemy : UpdateableGameObject, IDamagable
     {
         return hp <= 0;
     }
-
     public override void UpdateEveryFrame()
     {
         if (IsDead())
@@ -63,7 +60,7 @@ public class Enemy : UpdateableGameObject, IDamagable
                 {
                     if(pathIndex == path.Length - 1)
                     {
-                        print("finish");
+                        UiManager.instance.OnLevelLost();
                     }
                     pathIndex++;
                 }

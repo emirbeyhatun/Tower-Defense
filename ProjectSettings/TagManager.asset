@@ -47,9 +47,12 @@ TagManager:
   - name: Road
     uniqueID: 3291367345
     locked: 0
-  - name: Tower
+  - name: TowerBase
     uniqueID: 3572339497
     locked: 0
-  - name: Top
+  - name: Dynamic
     uniqueID: 4173536451
+    locked: 0
+  - name: Explotion
+    uniqueID: 10681937
     locked: 0

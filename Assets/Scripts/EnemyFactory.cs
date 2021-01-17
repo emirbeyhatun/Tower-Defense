@@ -8,8 +8,10 @@ public class EnemyFactory : UpdateableGameObject
     public Transform[] path;
     public Enemy enemyPrefab;
 
+    float spawnTimerDecreaseAmount = 0.05f;
     private float enemySpawnTimer = 0;
     public float enemySpawnInterval = 3;
+
 
     public List<Enemy> activeEnemies = new List<Enemy>(100);
     public List<Enemy> disactiveEnemies = new List<Enemy>(100);
@@ -29,6 +31,22 @@ public class EnemyFactory : UpdateableGameObject
         {
             SpawnEnemy();
             enemySpawnTimer = 0;
+
+            enemySpawnInterval -= spawnTimerDecreaseAmount;
+            enemySpawnInterval = Mathf.Max(enemySpawnInterval, 0.2f);
+
+            if(enemySpawnInterval > 2)
+            {
+                spawnTimerDecreaseAmount = 0.04f;
+            }
+            else if (enemySpawnInterval > 1)
+            {
+                spawnTimerDecreaseAmount = 0.025f;
+            }
+            else if (enemySpawnInterval <= 1)
+            {
+                spawnTimerDecreaseAmount = 0.001f;
+            }
         }
     }
 

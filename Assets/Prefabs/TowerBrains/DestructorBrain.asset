@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 293152322e28edd4d87e81aacf9a5411, type: 3}
+  m_Name: DestructorBrain
+  m_EditorClassIdentifier: 
+  ID: 3
+  damage: 25
+  price: 2000
+  killMoney: 20
+  killLimitForUpgrade: 150
+  shootIntervalSeconds: 1
+  bulletSpeed: 10
+  range: 4
+  defaultSprite: {fileID: 21300000, guid: 0780738a6bb5ce9499fe149a962b76a8, type: 3}
+  animatorController: {fileID: 22100000, guid: 795b48c6d96552a4ab705ef1cb8f80ad, type: 2}
+  bulletPrefab: {fileID: 8669874816908152821, guid: 3255f995018b5094d9011ac9c7b0e97c,
+    type: 3}
+  bulletExplotionPrefab: {fileID: 3147898881453824656, guid: f9351ad0d36a9204aabab668353d40e9,
+    type: 3}
+  upgradedVersion: {fileID: 0}
+  blastRadius: 0.5
+  blastLayer:
+    serializedVersion: 2
+    m_Bits: 1024

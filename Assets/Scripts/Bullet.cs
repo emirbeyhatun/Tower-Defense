@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour
@@ -12,21 +11,37 @@ public class Bullet : MonoBehaviour
 
     public delegate void BulletPoolHandler(Bullet bullet);
     public BulletPoolHandler OnBulletDisposed;
+    public delegate GameObject PooledExplotionReceiver(Vector3 pos);
+    public PooledExplotionReceiver OnExplotionCreated;
+
+    public delegate void BulletImpactHandler(Vector2 impactPos, IDamagable damagable, ITargeter targeter);
+    public BulletImpactHandler OnImpact;
+
+    [HideInInspector]public GameObject explotionPrefab;
     private WaitForSeconds secsToDestroy;
-    private void Start()
+    private bool enableCollision = false;
+    private void Awake()
     {
         secsToDestroy = new WaitForSeconds(10);
+    }
+    public void PrepareBullet()
+    {
         StartCoroutine(DestroyIfNoCollision());
+        enableCollision = true;
     }
     private void OnTriggerEnter2D(Collider2D other)
     {
         IDamagable damagable = other.GetComponent<IDamagable>();
-        if (damagable != null)
+        if (damagable != null && enableCollision)
         {
+            enableCollision = false;
             StopAllCoroutines();
-            damagable.Damage(Damage, Targeter);
+
+            OnImpact?.Invoke(transform.position, damagable, targeter);
+            OnBulletDisposed?.Invoke(this);
+            OnExplotionCreated?.Invoke(transform.position);
             gameObject.SetActive(false);
-            OnBulletDisposed(this);
+
         }
     }
 

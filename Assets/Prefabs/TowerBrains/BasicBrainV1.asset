@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70d6ba90f8d34194c8075e22cd2444f1, type: 3}
+  m_Name: BasicBrainV1
+  m_EditorClassIdentifier: 
+  ID: 1
+  damage: 10
+  price: 0
+  killMoney: 5
+  killLimitForUpgrade: 0
+  shootIntervalSeconds: 0.3
+  bulletSpeed: 10
+  range: 2
+  defaultSprite: {fileID: 21300000, guid: 00ade120ba368004eb6de27a62b7d546, type: 3}
+  animatorController: {fileID: 22100000, guid: 9a17d8b114da0e34a8462bd92089419c, type: 2}
+  bulletPrefab: {fileID: 8669874816908152821, guid: 9ea2cbc8f3fddd54495533a51a9bbd05,
+    type: 3}
+  bulletExplotionPrefab: {fileID: 3147898881453824656, guid: 1e1c806a06eb0814983b3c1133dc30ca,
+    type: 3}
+  upgradedVersion: {fileID: 11400000, guid: 24b76b9ebeb77494ba1288ae8c0b6d2a, type: 2}

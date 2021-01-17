@@ -5,6 +5,7 @@ public class Tower  : UpdateableGameObject, ITargeter
 {
     public TowerBrainBase brain;
     public Transform bulletSpawnPosition;
+    public GameObject warningIndicator;
     public int killedEnemy = 0;
     //pool
     //ACtion delegate
@@ -17,15 +18,37 @@ public class Tower  : UpdateableGameObject, ITargeter
 
     private Enemy target;
     private List<Enemy> enemiesInsideRange;
+    private Animator animator;
+    private SpriteRenderer spriteRenderer;
+    private CircleCollider2D circCollider;
 
+    private void Start()
+    {
+        brain = GameManager.instance.TryToGetBrain(brain);
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        animator = GetComponent<Animator>();
+        circCollider = GetComponent<CircleCollider2D>();
+        RefreshWithBrain();
+    }
 
-    private void Awake()
+    private void RefreshWithBrain()
     {
         if (brain == null)
             return;
-
+        
         shootInterval = brain.shootIntervalSeconds;
-        GetComponent<CircleCollider2D>().radius = brain.range;
+
+        if(circCollider)
+            circCollider.radius = brain.range;
+
+        if(spriteRenderer)
+            spriteRenderer.sprite = brain.defaultSprite;
+
+        if (animator)
+        {
+            animator.runtimeAnimatorController = brain.animatorController;
+            animator.Rebind();
+        }
     }
 
     public override void UpdateEveryFrame()
@@ -100,11 +123,20 @@ public class Tower  : UpdateableGameObject, ITargeter
                 collidedEnemy.RemoveSubscribedTargeter(this);
                 StopTargettingCurrent();
             }
-            if (enemiesInsideRange.Contains(collidedEnemy))
+            else if (enemiesInsideRange != null)
             {
-                enemiesInsideRange.Remove(collidedEnemy);
+                if (enemiesInsideRange.Contains(collidedEnemy))
+                {
+                    enemiesInsideRange.Remove(collidedEnemy);
+                }
             }
         }
+    }
+
+    public void SetBrain(TowerBrainBase newBrain)
+    {
+        brain = GameManager.instance.TryToGetBrain(newBrain);
+        RefreshWithBrain();
     }
     private void SetTarget(Enemy enemy)
     {
@@ -134,18 +166,10 @@ public class Tower  : UpdateableGameObject, ITargeter
 
     public void Shoot()
     {
-        if (brain == null || bulletSpawnPosition == null || target == null)
+        if (brain == null || bulletSpawnPosition == null || target == null || animator == null)
             return;
 
-        
-
-        Bullet spawnedBullet = brain.ShootBullet(bulletSpawnPosition.position, target.transform.position);
-        if (spawnedBullet)
-        {
-            spawnedBullet.Targeter = this;
-            spawnedBullet.OnBulletDisposed = brain.AddBulletToPool;
-        }
-
+        Bullet spawnedBullet = brain.ShootBullet(bulletSpawnPosition.position, target.transform.position, this, animator);
     }
 
    
@@ -162,5 +186,41 @@ public class Tower  : UpdateableGameObject, ITargeter
     public void OnTargetKilled()
     {
         killedEnemy++;
+        if (brain)
+        {
+            if (brain.upgradedVersion)
+            {
+                if (killedEnemy >= brain.upgradedVersion.killLimitForUpgrade)
+                {
+                    if (warningIndicator)
+                    {
+                        warningIndicator.gameObject.SetActive(true);
+                    }
+                }
+            }
+
+            GameManager.instance.EarnMoney(brain.killMoney);
+        }
+    }
+
+    public void ResetWarning()
+    {
+        if (warningIndicator)
+        {
+            warningIndicator.gameObject.SetActive(false);
+        }
+    }
+
+    public bool IsUpgradeAvailable()
+    {
+        if (brain)
+        {
+            if (killedEnemy >= brain.killLimitForUpgrade)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
