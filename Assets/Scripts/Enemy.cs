@@ -9,9 +9,9 @@ public class Enemy : UpdateableGameObject, IDamagable
     public int hp = 100;
     public int baseHp = 100;
 
-
     public delegate void EnemyDeathHandler(Enemy enemy);
     private EnemyDeathHandler OnEnemyDeath;
+
     private Transform[] path;
     private int pathIndex = 0;
     private List<ITargeter> subscribedTargeters = new List<ITargeter>();
@@ -53,7 +53,8 @@ public class Enemy : UpdateableGameObject, IDamagable
             if(pathIndex < path.Length)
             {
                 Vector2 dir = path[pathIndex].transform.position - transform.position;
-                if (dir.magnitude > 0.3f){
+                if (dir.magnitude > 0.3f)
+                {
                     transform.Translate(dir.normalized * speed * Time.deltaTime);
                 }
                 else

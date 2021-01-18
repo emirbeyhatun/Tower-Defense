@@ -18,21 +18,19 @@ public class GameManager : MonoBehaviour
 
     public int towerPriceIncreaseAmount = 55;
 
+    private int killCountLimit = 3000;
+    public int KillCountLimit { get => killCountLimit; }
 
     public bool isGameResuming = false;
 
+    public Dictionary<int, TowerBrainBase> instantiatedTowerBrains = new Dictionary<int, TowerBrainBase>();
     public EnemyFactory enemyFactory;
     public TowerFactory towerFactory;
     public UpgradePanel upgPanel;
 
-
-
-    private static readonly int updateablesStartSize = 100;
-    private UpdateableGameObject[] updateableObjects = new UpdateableGameObject[updateablesStartSize];
-    private int updateableCurrentIndex = 0;
+    private List<UpdateableGameObject> updateableObjects = new List<UpdateableGameObject>();
     private WaitForSeconds explotionPoolingTime = new WaitForSeconds(2);
 
-    public Dictionary<int, TowerBrainBase> instantiatedTowerBrains = new Dictionary<int, TowerBrainBase>();
 
     private void Awake()
     {
@@ -47,14 +45,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
     private void RefreshUpdateables()
     {
         if (updateableObjects == null)
             return;
 
         int i = 0;
-        while(i < updateableCurrentIndex)
+        while(i < updateableObjects.Count)
         {
             UpdateableGameObject updateable = updateableObjects[i];
             if (updateable != null)
@@ -63,34 +60,18 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                if (i < updateableCurrentIndex - 1)
-                {
-                    updateableObjects[i] = updateableObjects[updateableCurrentIndex - 1];
-                    updateableCurrentIndex--;
-                }
-                else if (i == updateableCurrentIndex - 1)
-                {
-                    updateableCurrentIndex--;
-                }
+                updateableObjects.RemoveAt(i);
+                i--;
             }
             i++;
         }
     }
     public void AddUpdateableObject(UpdateableGameObject updateable)
     {
-        if (updateable == null)
+        if (updateable == null || updateableObjects == null)
             return;
 
-        if (updateableCurrentIndex >= updateableObjects.Length)
-        {
-            UpdateableGameObject[] newUpdArray = new UpdateableGameObject[updateableObjects.Length * 2];
-
-            updateableObjects.CopyTo(newUpdArray, 0);
-            updateableObjects = newUpdArray;
-        }
-
-        updateableObjects[updateableCurrentIndex] = updateable;
-        updateableCurrentIndex++;
+        updateableObjects.Add(updateable);
     }
 
     public void PoolExplotion(TowerBrainBase towerScriptableObj, GameObject explotion)
@@ -112,6 +93,23 @@ public class GameManager : MonoBehaviour
     {
         killCount++;
         UiManager.instance.UpdateKillText();
+
+        if (IsGameWinConditionMet())
+        {
+            UiManager.instance.OnLevelWon();
+        }
+    }
+
+    public bool IsGameWinConditionMet()
+    {
+        if(killCount >= killCountLimit)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public bool TryToPurchase(int price)
@@ -123,6 +121,15 @@ public class GameManager : MonoBehaviour
             UpdateSpawnButton();
             UpdateUpgPanel();
             UiManager.instance.UpdateGoldText();
+            return true;
+        }
+
+        return false;
+    }
+    public bool CanBePurchased(int price)
+    {
+        if (price <= gold)
+        {
             return true;
         }
 
@@ -160,7 +167,7 @@ public class GameManager : MonoBehaviour
         if (towerFactory == null)
             return;
 
-        if (gold >= towerSpawnPrice && towerFactory.GetAvailableTowerSlotAmount() > 0 )
+        if (gold >= towerSpawnPrice && towerFactory.GetAvailableSlotAmount() > 0 )
         {
             UiManager.instance.EnableSpawnButton(true);
         }

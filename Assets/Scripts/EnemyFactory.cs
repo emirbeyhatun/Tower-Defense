@@ -7,14 +7,14 @@ public class EnemyFactory : UpdateableGameObject
     public Transform spawnPosition;
     public Transform[] path;
     public Enemy enemyPrefab;
-
-    float spawnTimerDecreaseAmount = 0.05f;
-    private float enemySpawnTimer = 0;
-    public float enemySpawnInterval = 3;
-
-
     public List<Enemy> activeEnemies = new List<Enemy>(100);
     public List<Enemy> disactiveEnemies = new List<Enemy>(100);
+
+    public float enemySpawnInterval = 3;
+    private float spawnTimerDecreaseAmount = 0.05f;
+    private float enemySpawnTimer = 0;
+    private int spawnedEnemyCount = 0;
+
 
 
     private void Start()
@@ -33,7 +33,7 @@ public class EnemyFactory : UpdateableGameObject
             enemySpawnTimer = 0;
 
             enemySpawnInterval -= spawnTimerDecreaseAmount;
-            enemySpawnInterval = Mathf.Max(enemySpawnInterval, 0.2f);
+            enemySpawnInterval = Mathf.Max(enemySpawnInterval, 0.03f);
 
             if(enemySpawnInterval > 2)
             {
@@ -41,11 +41,11 @@ public class EnemyFactory : UpdateableGameObject
             }
             else if (enemySpawnInterval > 1)
             {
-                spawnTimerDecreaseAmount = 0.025f;
+                spawnTimerDecreaseAmount = 0.035f;
             }
             else if (enemySpawnInterval <= 1)
             {
-                spawnTimerDecreaseAmount = 0.001f;
+                spawnTimerDecreaseAmount = 0.0015f;
             }
         }
     }
@@ -55,9 +55,13 @@ public class EnemyFactory : UpdateableGameObject
         throw new System.NotImplementedException();
     }
 
+    public int AmountOfEnemyLeft()
+    {
+        return Mathf.Max(GameManager.instance.KillCountLimit - spawnedEnemyCount, 0);
+    }
     public void SpawnEnemy()
     {
-        if (enemyPrefab == null || spawnPosition == null)
+        if (enemyPrefab == null || spawnPosition == null || AmountOfEnemyLeft() <= 0)
             return;
 
         Enemy spawnedEnemy = null;
@@ -78,6 +82,8 @@ public class EnemyFactory : UpdateableGameObject
         {
             spawnedEnemy.PrepareEnemy(path, SwitchEnemyToDisabled);
             spawnedEnemy.transform.position = spawnPosition.transform.position;
+
+            spawnedEnemyCount++;
         }
     }
 

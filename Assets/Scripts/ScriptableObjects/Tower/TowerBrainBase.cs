@@ -50,7 +50,6 @@ public abstract class TowerBrainBase : ScriptableObject
             bullet.transform.position = startPos;
         }
 
-       
         bullet.Damage = damage;
         bullet.explotionPrefab = bulletExplotionPrefab;
         bullet.Targeter = targeter;
@@ -64,14 +63,10 @@ public abstract class TowerBrainBase : ScriptableObject
         {
             animator.SetTrigger("Shoot");
         }
-
-
-
         return bullet;
     }
 
     public abstract void OnBulletImpact(Vector2 impactPos, IDamagable damagable, ITargeter targeter);
-    
 
     public void PoolBullet(Bullet bullet)
     {
@@ -94,7 +89,6 @@ public abstract class TowerBrainBase : ScriptableObject
             return null;
         }
     }
-
     public void PoolExplotion(GameObject explotion)
     {
         if (explotion)
@@ -102,7 +96,6 @@ public abstract class TowerBrainBase : ScriptableObject
             explotionPool.Enqueue(explotion);
         }
     }
-   
 
     public GameObject GetPooledExplotionElseCreate(Vector3 pos)
     {
@@ -123,12 +116,6 @@ public abstract class TowerBrainBase : ScriptableObject
         }
 
         GameManager.instance.PoolExplotion(this, explotion);
-
         return explotion;
-
     }
-
-
-
-
 }

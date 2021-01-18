@@ -9,6 +9,7 @@ public class UiManager : MonoBehaviour
 
     public GameObject EndGameUI;
     public GameObject ReadyGameUI;
+    public GameObject WonGameUI;
 
     public Button towerSpawnButton;
     public Text spawnedTowerAmountText;
@@ -16,12 +17,9 @@ public class UiManager : MonoBehaviour
     public Text goldText;
     public Text killText;
 
-
-
     private void Awake()
     {
         instance = this;
-
         OnLevelReady();
     }
 
@@ -40,8 +38,8 @@ public class UiManager : MonoBehaviour
 
         if (spawnedTowerAmountText && GameManager.instance.towerFactory)
         {
-            int spawnedAmount = GameManager.instance.towerFactory.GetSpawnedTowerAmount();
-            spawnedTowerAmountText.text = spawnedAmount + " / " + (spawnedAmount + GameManager.instance.towerFactory.GetAvailableTowerSlotAmount()) ;
+            int spawnedAmount = GameManager.instance.towerFactory.GetSpawnedAmount();
+            spawnedTowerAmountText.text = spawnedAmount + " / " + (spawnedAmount + GameManager.instance.towerFactory.GetAvailableSlotAmount()) ;
         }
     }
 
@@ -57,7 +55,7 @@ public class UiManager : MonoBehaviour
     {
         if (killText)
         {
-            killText.text = GameManager.instance.KillCount.ToString();
+            killText.text = GameManager.instance.KillCount.ToString() +"/" + GameManager.instance.KillCountLimit.ToString();
         }
     }
 
@@ -73,9 +71,7 @@ public class UiManager : MonoBehaviour
     {
         Time.timeScale = 1;
         SceneManager.LoadScene(0);
-
         GameManager.instance = null;
-
     }
 
     public void OnLevelLost()
@@ -118,4 +114,10 @@ public class UiManager : MonoBehaviour
         }
     }
 
+    internal void OnLevelWon()
+    {
+        Time.timeScale = 0;
+        if (WonGameUI)
+            WonGameUI.SetActive(true);
+    }
 }

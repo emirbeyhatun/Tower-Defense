@@ -7,8 +7,6 @@ public class Tower  : UpdateableGameObject, ITargeter
     public Transform bulletSpawnPosition;
     public GameObject warningIndicator;
     public int killedEnemy = 0;
-    //pool
-    //ACtion delegate
 
     private float shootTimer = 0;
     private float shootInterval = 0;
@@ -55,7 +53,6 @@ public class Tower  : UpdateableGameObject, ITargeter
     {
         if (brain == null)
             return;
-
 
         float deltaTime = Time.deltaTime;
 
@@ -121,7 +118,7 @@ public class Tower  : UpdateableGameObject, ITargeter
             if (target == collidedEnemy)
             {
                 collidedEnemy.RemoveSubscribedTargeter(this);
-                StopTargettingCurrent();
+                StopTargettingCurrentTarget();
             }
             else if (enemiesInsideRange != null)
             {
@@ -154,14 +151,36 @@ public class Tower  : UpdateableGameObject, ITargeter
 
     public void TryToFindAndSetEnemyInRange()
     {
-        if (enemiesInsideRange != null)
+        if (enemiesInsideRange != null && brain)
         {
-            if (enemiesInsideRange.Count > 0)
+            for (int i = 0; i < enemiesInsideRange.Count; i++)
             {
-                SetTarget(enemiesInsideRange[0]);
-                enemiesInsideRange.Remove(enemiesInsideRange[0]);
+                if (enemiesInsideRange[i])
+                {
+                    if(IsInRange(enemiesInsideRange[i]))
+                    {
+                        SetTarget(enemiesInsideRange[i]);
+                        enemiesInsideRange.Remove(enemiesInsideRange[i]);
+                        return;
+                    }
+                }
+            }
+            
+        }
+    }
+
+    public bool IsInRange(Enemy enemyToCompare)
+    {
+        if (brain && circCollider)
+        {
+            float colliderOffset = 0.5f;
+            if (Vector2.Distance(enemyToCompare.transform.position, transform.position) <= (brain.range + colliderOffset))
+            {
+                return true;
             }
         }
+
+        return false;
     }
 
     public void Shoot()
@@ -169,18 +188,25 @@ public class Tower  : UpdateableGameObject, ITargeter
         if (brain == null || bulletSpawnPosition == null || target == null || animator == null)
             return;
 
-        Bullet spawnedBullet = brain.ShootBullet(bulletSpawnPosition.position, target.transform.position, this, animator);
+        if(IsInRange(target))
+        {
+            Bullet spawnedBullet = brain.ShootBullet(bulletSpawnPosition.position, target.transform.position, this, animator);
+        }
+        else
+        {
+            target = null;
+        }
     }
 
    
-    public void StopTargettingCurrent()
+    public void StopTargettingCurrentTarget()
     {
         SetTarget(null);
     }
 
     public void OnTargetUnavailable()
     {
-        StopTargettingCurrent();
+        StopTargettingCurrentTarget();
     }
 
     public void OnTargetKilled()

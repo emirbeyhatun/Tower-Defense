@@ -6,8 +6,6 @@ public class TowerBasicBrain : TowerBrainBase
     public override Bullet ShootBullet(Vector2 startPos, Vector2 targetPos, Tower targeter, Animator animator)
     {
         Bullet bullet = base.ShootBullet(startPos, targetPos, targeter, animator);
-
-
         Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
         
         if (rb)
@@ -17,8 +15,6 @@ public class TowerBasicBrain : TowerBrainBase
             bullet.transform.up = dir.normalized;
 
         }
-
-
         return bullet;
     }
 

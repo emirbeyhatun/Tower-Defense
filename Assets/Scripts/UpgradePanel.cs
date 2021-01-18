@@ -40,7 +40,7 @@ public class UpgradePanel : MonoBehaviour
         {
             if (tower.brain.upgradedVersion != null)
             {
-                if (GameManager.instance.Gold >= tower.brain.upgradedVersion.price && tower.killedEnemy >= tower.brain.upgradedVersion.killLimitForUpgrade)
+                if (GameManager.instance.CanBePurchased(tower.brain.upgradedVersion.price)  && tower.killedEnemy >= tower.brain.upgradedVersion.killLimitForUpgrade)
                 {
                     upgBtn.interactable = true;
                     if (upgBtnText)
@@ -63,21 +63,17 @@ public class UpgradePanel : MonoBehaviour
                     if (upgBtnNotEnoughText)
                     {
                         upgBtnNotEnoughText.gameObject.SetActive(true);
-                        if(GameManager.instance.Gold < tower.brain.upgradedVersion.price)
+                        if(GameManager.instance.CanBePurchased(tower.brain.upgradedVersion.price) == false)
                         {
                             upgBtnNotEnoughText.text = "Not Enough Money";
                         }
                         else 
                         {
                             upgBtnNotEnoughText.text = "Not Enough Kill";
-
                         }
-
                     }
-
                     tower.ResetWarning();
                 }
-
             }
             else
             {

@@ -9,13 +9,11 @@ public class TowerFactory : UpdateableGameObject
     public Tilemap towerSlotTilemap;
     public GameObject towerPrefab;
     public Camera cam;
-    Tower[] spawnedTowers;
-    int spawnedTowerIndex = 0;
+    public LayerMask towerLayermask;
 
-    Vector3Int[] allTowerSlots;
-    int[] availableTowerSlots;
-    int availableSlotCount = 0;
-    int lastAvailableSlotIndex = 0;
+    private List<Tower> spawnedTowers;
+    private List<Vector3Int> availableSlots;
+
 
      
     private void Awake()
@@ -28,34 +26,9 @@ public class TowerFactory : UpdateableGameObject
         GameManager.instance.AddUpdateableObject(this);
     }
 
-    public override void UpdateEveryFrame()
-    {
-        if (Input.GetMouseButtonDown(0) && GameManager.instance.upgPanel.gameObject.activeSelf == false)
-        {
-            Vector3 worldPos = cam.ScreenToWorldPoint(Input.mousePosition);
-            Vector3Int cell = towerSlotTilemap.WorldToCell(worldPos);
-
-            for (int i = 0; i < allTowerSlots.Length; i++)
-            {
-                if(cell.x == allTowerSlots [i].x && cell.y == allTowerSlots[i].y)
-                {
-                    if (spawnedTowers[i])
-                    {
-                        GameManager.instance.upgPanel.PreparePanel(spawnedTowers[i]);
-                    }
-                }
-            }
-        }
-    }
-
-    public override void UpdateFixedFrame()
-    {
-        throw new NotImplementedException();
-    }
-
     private void PrepareFactory()
     {
-        List<Vector3Int> filledTiles = new List<Vector3Int>();
+        availableSlots = new List<Vector3Int>();
 
         Vector3Int tilemapOrigin = towerSlotTilemap.origin;
 
@@ -66,88 +39,109 @@ public class TowerFactory : UpdateableGameObject
                 Vector3Int tileIndices = new Vector3Int(i, j, 0);
                 if ((Tile)towerSlotTilemap.GetTile(tileIndices))
                 {
-                    filledTiles.Add(tileIndices);
+                    availableSlots.Add(tileIndices);
                 }
             }
         }
-
-        allTowerSlots = filledTiles.ToArray();
-
-        spawnedTowers = new Tower[allTowerSlots.Length];
-        spawnedTowerIndex = 0;
-
-        availableTowerSlots = new int[allTowerSlots.Length];
-        availableSlotCount = availableTowerSlots.Length;
-        lastAvailableSlotIndex = Mathf.Max(availableTowerSlots.Length - 1, 0);
-
-        for (int i = 0; i < availableTowerSlots.Length; i++)
-        {
-            availableTowerSlots[i] = i;
-        }
-
+        spawnedTowers = new List<Tower>();
     }
 
-    public void SpawnTowerOnRandSlot()
+    public override void UpdateEveryFrame()
     {
-        if (towerSlotTilemap == null|| allTowerSlots == null || towerPrefab == null)
-            return;
+        if (Input.GetMouseButtonDown(0) && GameManager.instance.upgPanel.gameObject.activeSelf == false)
+        {
+            Vector3 worldPos = cam.ScreenToWorldPoint(Input.mousePosition);
+            Vector3Int cell = towerSlotTilemap.WorldToCell(worldPos);
+
+            RaycastHit2D hitInfo = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero, 1000, towerLayermask);
+            if (hitInfo.collider)
+            {
+                Tower collidedTower = hitInfo.collider.GetComponent<Tower>();
+                if (collidedTower)
+                {
+                    GameManager.instance.upgPanel.PreparePanel(collidedTower);
+                }
+            }
+        }
+    }
+
+    public override void UpdateFixedFrame()
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool SpawnTowerOnRandSlot()
+    {
+        if (towerSlotTilemap == null|| availableSlots == null || towerPrefab == null)
+            return false;
 
         Vector3Int randSlotPosition;
-        int randSlotIndex = 0;
-        if (TryToGetRandAvailableSlot(out randSlotPosition, out randSlotIndex))
+        if (TryToPopRandAvailableSlot(out randSlotPosition))
         {
             Vector3 slotWorldPos = towerSlotTilemap.GetCellCenterWorld(randSlotPosition);
-            SpawnTowerAtPos(slotWorldPos, randSlotIndex);
+            SpawnTowerAtPos(slotWorldPos);
+            return true;
         }
-
+        return false;
     }
-    private bool TryToGetRandAvailableSlot(out Vector3Int randSlotPosition, out int randSlotIndex)
+    private bool TryToPopRandAvailableSlot(out Vector3Int randSlotPosition)
     {
-        if (lastAvailableSlotIndex < 0 || availableTowerSlots == null)
+        if (availableSlots == null)
         {
             randSlotPosition = Vector3Int.zero;
-            randSlotIndex = -1;
+            return false;
+        }
+        if (availableSlots.Count <= 0)
+        {
+            randSlotPosition = Vector3Int.zero;
             return false;
         }
 
-        int randSlotIndx = UnityEngine.Random.Range(0, availableSlotCount);
-        int selectedTowerSlot = availableTowerSlots[randSlotIndx];
+        int randSlotIndx = UnityEngine.Random.Range(0, availableSlots.Count);
+        randSlotPosition = availableSlots[randSlotIndx];
+        availableSlots.RemoveAt(randSlotIndx);
 
-        availableTowerSlots[randSlotIndx] = availableTowerSlots[lastAvailableSlotIndex];
-        availableTowerSlots[lastAvailableSlotIndex] = -1;
-        lastAvailableSlotIndex -= 1;
-        availableSlotCount -= 1;
-
-
-        randSlotPosition = allTowerSlots[selectedTowerSlot];
-        randSlotIndex = selectedTowerSlot;
         return true;
     }
 
-    private void SpawnTowerAtPos(Vector3 pos, int slotIndex)
+    private void SpawnTowerAtPos(Vector3 pos)
     {
         if (towerPrefab == null || spawnedTowers == null)
             return;
-
-        if(spawnedTowerIndex < spawnedTowers.Length)
+        
+        Tower newTower = Instantiate(towerPrefab, pos, Quaternion.identity, null).GetComponent<Tower>();
+        if (newTower)
         {
-            spawnedTowers[slotIndex] = Instantiate(towerPrefab, pos, Quaternion.identity, null).GetComponent<Tower>();
-            GameManager.instance.AddUpdateableObject(spawnedTowers[slotIndex]);
-            spawnedTowerIndex++;
+            spawnedTowers.Add(newTower);
+            GameManager.instance.AddUpdateableObject(newTower);
         }
     }
 
-    
-
-    public int GetSpawnedTowerAmount()
+    public int GetSpawnedAmount()
     {
-        return spawnedTowerIndex;
-
+        if (spawnedTowers == null)
+        {
+            return 0;
+        }
+        if (spawnedTowers.Count <= 0)
+        {
+            return 0;
+        }
+        return spawnedTowers.Count;
     }
 
-    public int GetAvailableTowerSlotAmount()
+    public int GetAvailableSlotAmount()
     {
-        return availableSlotCount;
+        if (availableSlots == null)
+        {
+            return 0;
+        }
+        if (availableSlots.Count <= 0)
+        {
+            return 0;
+        }
+
+        return availableSlots.Count;
     }
 
     

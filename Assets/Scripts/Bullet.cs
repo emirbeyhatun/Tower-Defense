@@ -18,15 +18,11 @@ public class Bullet : MonoBehaviour
     public BulletImpactHandler OnImpact;
 
     [HideInInspector]public GameObject explotionPrefab;
-    private WaitForSeconds secsToDestroy;
     private bool enableCollision = false;
-    private void Awake()
-    {
-        secsToDestroy = new WaitForSeconds(10);
-    }
+    
     public void PrepareBullet()
     {
-        StartCoroutine(DestroyIfNoCollision());
+        Invoke(nameof(DestroyIfNoCollision), 10);
         enableCollision = true;
     }
     private void OnTriggerEnter2D(Collider2D other)
@@ -35,19 +31,23 @@ public class Bullet : MonoBehaviour
         if (damagable != null && enableCollision)
         {
             enableCollision = false;
-            StopAllCoroutines();
+            CancelInvoke(nameof(DestroyIfNoCollision));
 
             OnImpact?.Invoke(transform.position, damagable, targeter);
             OnBulletDisposed?.Invoke(this);
             OnExplotionCreated?.Invoke(transform.position);
+
+            OnImpact = null;
+            OnBulletDisposed = null;
+            OnExplotionCreated = null;
+
             gameObject.SetActive(false);
 
         }
     }
 
-    IEnumerator DestroyIfNoCollision()
+    void DestroyIfNoCollision()
     {
-        yield return secsToDestroy;
         Destroy(gameObject);
     }
 }
